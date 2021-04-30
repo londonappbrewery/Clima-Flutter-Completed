@@ -1,47 +1,51 @@
+import 'package:clima/screens/city_screen.dart';
+import 'package:clima/services/weather.dart';
 import 'package:flutter/material.dart';
 import 'package:clima/utilities/constants.dart';
-import 'package:clima/services/weather.dart';
-import 'city_screen.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class LocationScreen extends StatefulWidget {
-  LocationScreen({this.locationWeather});
-
-  final locationWeather;
-
+  LocationScreen({this.locationweather});
+  final locationweather;
   @override
   _LocationScreenState createState() => _LocationScreenState();
 }
 
 class _LocationScreenState extends State<LocationScreen> {
-  WeatherModel weather = WeatherModel();
-  int temperature;
+  WeatherModel weatherModel = new WeatherModel(); //weather model instance
+  int temprature;
+  String country;
+  String cityTown;
+  int condition;
+  String weathermsg;
   String weatherIcon;
-  String cityName;
-  String weatherMessage;
-
   @override
   void initState() {
     super.initState();
-
-    updateUI(widget.locationWeather);
+    updateWeatherInfo(widget.locationweather);
   }
 
-  void updateUI(dynamic weatherData) {
-    setState(() {
-      if (weatherData == null) {
-        temperature = 0;
-        weatherIcon = 'Error';
-        weatherMessage = 'Unable to get weather data';
-        cityName = '';
-        return;
-      }
-      double temp = weatherData['main']['temp'];
-      temperature = temp.toInt();
-      var condition = weatherData['weather'][0]['id'];
-      weatherIcon = weather.getWeatherIcon(condition);
-      weatherMessage = weather.getMessage(temperature);
-      cityName = weatherData['name'];
-    });
+  void updateWeatherInfo(var weatherdatainfo) {
+    // if (weatherdatainfo == null) {
+    //   this.temprature = 0;
+    //   this.cityTown = '';
+    //   this.country = '';
+    //   return;
+    // }
+    //decoding the jsin data
+
+    double temp = weatherdatainfo['main']['temp'];
+    temprature = temp.toInt(); //convert to an int
+    weathermsg = weatherModel.getMessage(temprature); //displaye message
+    //weatherIcon = weatherModel.getWeatherIcon(condition);//get icon
+    country = weatherdatainfo['sys']['country'];
+    cityTown = weatherdatainfo['name'];
+    condition = weatherdatainfo['weather'][0]['id'];
+
+    print(temprature);
+    print(country);
+    print(cityTown);
+    print(condition);
   }
 
   @override
@@ -65,30 +69,39 @@ class _LocationScreenState extends State<LocationScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
+                  // ignore: deprecated_member_use
                   FlatButton(
-                    onPressed: () async {
-                      var weatherData = await weather.getLocationWeather();
-                      updateUI(weatherData);
+                    onPressed: () async{
+                      var weatherdata = await weatherModel.get_currentLocation();
+                      setState(() {
+                        updateWeatherInfo(weatherdata);
+
+                      });
+                      
                     },
                     child: Icon(
                       Icons.near_me,
                       size: 50.0,
                     ),
                   ),
+                  // ignore: deprecated_member_use
                   FlatButton(
                     onPressed: () async {
-                      var typedName = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return CityScreen();
-                          },
-                        ),
-                      );
-                      if (typedName != null) {
-                        var weatherData =
-                            await weather.getCityWeather(typedName);
-                        updateUI(weatherData);
+                      var typedCityName = await Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return CityScreen();
+                      }));
+                      print(typedCityName);
+                      if (typedCityName != null) {
+                        //call a function and get the weather
+
+                        //WeatherModel weathermodel = new WeatherModel();
+                        var newweatherdata = await weatherModel
+                            .fetchWeatherDataByCityName(typedCityName);
+                        setState(() {
+                          updateWeatherInfo(newweatherdata);
+                        });    
+                        
                       }
                     },
                     child: Icon(
@@ -102,12 +115,17 @@ class _LocationScreenState extends State<LocationScreen> {
                 padding: EdgeInsets.only(left: 15.0),
                 child: Row(
                   children: <Widget>[
-                    Text(
-                      '$temperature°',
-                      style: kTempTextStyle,
+                    Row(
+                      children: [
+                        Icon(FontAwesomeIcons.temperatureHigh),
+                        Text(
+                          '$temprature',
+                          style: kTempTextStyle,
+                        ),
+                      ],
                     ),
                     Text(
-                      weatherIcon,
+                      weatherModel.getWeatherIcon(condition),
                       style: kConditionTextStyle,
                     ),
                   ],
@@ -115,10 +133,12 @@ class _LocationScreenState extends State<LocationScreen> {
               ),
               Padding(
                 padding: EdgeInsets.only(right: 15.0),
-                child: Text(
-                  '$weatherMessage in $cityName',
-                  textAlign: TextAlign.right,
-                  style: kMessageTextStyle,
+                child: Center(
+                  child: Text(
+                    '$weathermsg' + 'in' + '' + '' + '$cityTown',
+                    textAlign: TextAlign.right,
+                    style: kMessageTextStyle,
+                  ),
                 ),
               ),
             ],
