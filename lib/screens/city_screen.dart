@@ -25,7 +25,15 @@ class _CityScreenState extends State<CityScreen> {
             children: <Widget>[
               Align(
                 alignment: Alignment.topLeft,
-                child: FlatButton(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    side: const BorderSide(
+                      width: 1.0,
+                      color: Colors.white,
+                    ),
+                  ),
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -47,7 +55,15 @@ class _CityScreenState extends State<CityScreen> {
                   },
                 ),
               ),
-              FlatButton(
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                    side: const BorderSide(
+                      width: 1.0,
+                      color: Colors.white,
+                    ),
+                ),
                 onPressed: () {
                   Navigator.pop(context, cityName);
                 },
